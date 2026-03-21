@@ -1,0 +1,15 @@
+mobile_app:
+  workspace: acme
+  name: "Mobile App"
+  description: "iOS and Android applications"
+  status: "active"
+  created_at: "2024-01-01 00:00:00"
+  updated_at: "2024-01-01 00:00:00"
+
+web_platform:
+  workspace: acme
+  name: "Web Platform"
+  description: "Main web product"
+  status: "active"
+  created_at: "2024-01-01 00:00:00"
+  updated_at: "2024-01-01 00:00:00"

@@ -1,0 +1,23 @@
+john:
+  id: "user_2abc123xyz"
+  email: "john@acme.com"
+  display_name: "John Smith"
+  avatar_url: "https://example.com/avatars/john.jpg"
+  created_at: "2024-01-01 00:00:00"
+  updated_at: "2024-01-01 00:00:00"
+
+jane:
+  id: "user_2def456uvw"
+  email: "jane@acme.com"
+  display_name: "Jane Doe"
+  avatar_url: ~
+  created_at: "2024-01-01 00:00:00"
+  updated_at: "2024-01-01 00:00:00"
+
+outsider:
+  id: "user_2ghi789rst"
+  email: "outsider@other.com"
+  display_name: "Outside User"
+  avatar_url: ~
+  created_at: "2024-01-01 00:00:00"
+  updated_at: "2024-01-01 00:00:00"

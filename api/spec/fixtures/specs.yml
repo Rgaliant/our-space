@@ -1,0 +1,21 @@
+user_auth:
+  workspace: acme
+  project: mobile_app
+  created_by: john
+  title: "User Authentication"
+  content: "## Overview\nUsers need to sign in with email or Google OAuth."
+  status: "approved"
+  ai_generated: false
+  created_at: "2024-01-01 00:00:00"
+  updated_at: "2024-01-01 00:00:00"
+
+push_notifications:
+  workspace: acme
+  project: mobile_app
+  created_by: john
+  title: "Push Notifications"
+  content: "## Overview\nUsers need to receive push notifications for key events."
+  status: "draft"
+  ai_generated: true
+  created_at: "2024-01-02 00:00:00"
+  updated_at: "2024-01-02 00:00:00"
