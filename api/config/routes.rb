@@ -8,6 +8,8 @@ Rails.application.routes.draw do
       get "me", to: "auth/me#show"
 
       resources :workspaces, param: :slug do
+        patch "onboarding", to: "workspace_onboarding#update", on: :member
+
         resources :projects do
           resources :specs do
             resources :tickets
@@ -18,9 +20,13 @@ Rails.application.routes.draw do
             post "tickets/:ticket_id/assistant", to: "ticket#create"
           end
         end
+
         resources :conversations do
           resources :messages, only: [ :index, :create ], controller: "conversation_messages"
         end
+
+        resources :feedback, only: [ :index, :show, :create, :update, :destroy ]
+
         namespace :ai do
           post "plan", to: "plan#create"
         end

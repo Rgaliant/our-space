@@ -6,6 +6,7 @@ class Workspace < ApplicationRecord
   has_many :members, through: :workspace_members, source: :user
   has_many :projects, dependent: :destroy
   has_many :conversations, dependent: :destroy
+  has_many :feedback, class_name: "Feedback", dependent: :destroy
   has_many :embeddings, dependent: :destroy
 
   validates :name, presence: true, length: { maximum: 100 }
