@@ -12,14 +12,17 @@ Rails.application.routes.draw do
           resources :specs do
             resources :tickets
           end
-          resources :feedback, only: [ :index, :create, :show, :destroy ]
+          resources :feedback, only: [ :index, :show, :create, :update, :destroy ]
+          namespace :ai do
+            post "prioritize", to: "prioritize#create"
+            post "tickets/:ticket_id/assistant", to: "ticket#create"
+          end
         end
         resources :conversations do
           resources :messages, only: [ :index, :create ], controller: "conversation_messages"
         end
         namespace :ai do
-          post "plan",   to: "plan#create"
-          post "ticket", to: "ticket#create"
+          post "plan", to: "plan#create"
         end
       end
     end
