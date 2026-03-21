@@ -1,7 +1,7 @@
 user_auth:
   workspace: acme
   project: mobile_app
-  created_by: john
+  created_by_id: "user_2abc123xyz"
   title: "User Authentication"
   content: "## Overview\nUsers need to sign in with email or Google OAuth."
   status: "approved"
@@ -12,7 +12,7 @@ user_auth:
 push_notifications:
   workspace: acme
   project: mobile_app
-  created_by: john
+  created_by_id: "user_2abc123xyz"
   title: "Push Notifications"
   content: "## Overview\nUsers need to receive push notifications for key events."
   status: "draft"

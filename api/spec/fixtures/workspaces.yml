@@ -1,5 +1,5 @@
 acme:
-  owner: john
+  owner_id: "user_2abc123xyz"
   name: "Acme Corp"
   slug: "acme"
   plan: "pro"
@@ -8,7 +8,7 @@ acme:
   updated_at: "2024-01-01 00:00:00"
 
 startup_xyz:
-  owner: jane
+  owner_id: "user_2def456uvw"
   name: "Startup XYZ"
   slug: "startup-xyz"
   plan: "free"

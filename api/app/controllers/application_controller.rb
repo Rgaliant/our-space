@@ -2,11 +2,11 @@ class ApplicationController < ActionController::API
   include Clerk::Authenticatable
   before_action :require_clerk_session!
 
+  rescue_from StandardError,                       with: :handle_server_error
   rescue_from ActionController::ParameterMissing, with: :handle_bad_request
   rescue_from ActiveRecord::RecordNotFound,        with: :handle_not_found
   rescue_from ActiveRecord::RecordInvalid,         with: :handle_unprocessable
   rescue_from Clerk::AuthenticationError,          with: :handle_unauthorized
-  rescue_from StandardError,                       with: :handle_server_error
 
   if Rails.env.test?
     def require_clerk_session!

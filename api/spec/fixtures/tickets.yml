@@ -2,8 +2,8 @@ login_bug:
   workspace: acme
   project: mobile_app
   spec: user_auth
-  created_by: john
-  assignee: jane
+  created_by_id: "user_2abc123xyz"
+  assignee_id: "user_2def456uvw"
   title: "Fix login redirect bug"
   description: "After login, users are redirected to 404 instead of dashboard"
   status: "in_progress"
@@ -17,7 +17,7 @@ setup_oauth:
   workspace: acme
   project: mobile_app
   spec: user_auth
-  created_by: john
+  created_by_id: "user_2abc123xyz"
   title: "Implement Google OAuth"
   description: "Add Google OAuth sign-in option"
   status: "backlog"

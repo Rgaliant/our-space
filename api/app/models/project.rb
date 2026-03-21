@@ -5,7 +5,7 @@ class Project < ApplicationRecord
   has_many :specs, dependent: :destroy
   has_many :tickets, dependent: :destroy
   has_many :feedback, dependent: :destroy
-  has_many :conversations
+  has_many :conversations, dependent: :nullify
 
   validates :name, presence: true, length: { maximum: 150 }
   validates :status, inclusion: { in: STATUSES }

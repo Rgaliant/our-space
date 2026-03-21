@@ -1,4 +1,6 @@
 class Feedback < ApplicationRecord
+  self.table_name = "feedback"
+
   belongs_to :workspace
   belongs_to :project, optional: true
 
