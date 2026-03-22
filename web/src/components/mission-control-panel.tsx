@@ -3,6 +3,8 @@
 import { useState, useRef, useCallback } from "react";
 import { useAuth } from "@clerk/nextjs";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import type { Components } from "react-markdown";
 import {
   streamDistillation,
   apiClient,
@@ -36,6 +38,85 @@ interface Props {
 
 type Phase = "idle" | "streaming" | "complete";
 
+const PLAN_START = "<plan_content>";
+const PLAN_END = "</plan_content>";
+
+function extractPlanContent(raw: string): string {
+  const start = raw.indexOf(PLAN_START);
+  if (start === -1) return "";
+  const contentStart = start + PLAN_START.length;
+  const end = raw.indexOf(PLAN_END);
+  return end === -1 ? raw.slice(contentStart) : raw.slice(contentStart, end);
+}
+
+function isPlanStreamingDone(raw: string): boolean {
+  return raw.includes(PLAN_END);
+}
+
+const markdownComponents: Components = {
+  a: ({ href, children }) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-[#7C6FFD] underline underline-offset-2 hover:text-[#9D8FFD] transition-colors"
+    >
+      {children}
+    </a>
+  ),
+  h1: ({ children }) => (
+    <h1 className="text-base font-semibold text-[#EDEDEF] mt-5 mb-2 first:mt-0 pb-1 border-b border-[#27272B]">
+      {children}
+    </h1>
+  ),
+  h2: ({ children }) => (
+    <h2 className="text-sm font-semibold text-[#EDEDEF] mt-5 mb-2 first:mt-0 flex items-center gap-2">
+      <span className="w-1 h-4 rounded-full bg-[#7C6FFD]/60 shrink-0" />
+      {children}
+    </h2>
+  ),
+  h3: ({ children }) => (
+    <h3 className="text-sm font-medium text-[#EDEDEF] mt-3.5 mb-1.5 first:mt-0">{children}</h3>
+  ),
+  p: ({ children }) => (
+    <p className="text-sm text-[#C4C4CE] leading-relaxed mb-2.5 last:mb-0">{children}</p>
+  ),
+  ul: ({ children }) => (
+    <ul className="mb-3 space-y-1.5 pl-0">{children}</ul>
+  ),
+  ol: ({ children }) => (
+    <ol className="mb-3 space-y-1.5 pl-0 list-none">{children}</ol>
+  ),
+  li: ({ children }) => (
+    <li className="flex gap-2.5 text-sm text-[#C4C4CE] leading-relaxed">
+      <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-[#7C6FFD]/50 mt-[0.45rem]" />
+      <span className="flex-1">{children}</span>
+    </li>
+  ),
+  strong: ({ children }) => (
+    <strong className="font-semibold text-[#EDEDEF]">{children}</strong>
+  ),
+  em: ({ children }) => (
+    <em className="italic text-[#88889A]">{children}</em>
+  ),
+  code: ({ children }) => (
+    <code className="bg-[#18181C] px-1.5 py-0.5 rounded text-xs font-mono text-[#A78BFA] border border-[#27272B]">
+      {children}
+    </code>
+  ),
+  pre: ({ children }) => (
+    <pre className="bg-[#111114] border border-[#27272B] rounded-xl p-4 mb-3 overflow-x-auto text-xs font-mono">
+      {children}
+    </pre>
+  ),
+  blockquote: ({ children }) => (
+    <blockquote className="border-l-2 border-[#7C6FFD]/40 pl-4 py-0.5 my-3 text-[#88889A] italic bg-[#7C6FFD]/5 rounded-r-lg pr-3">
+      {children}
+    </blockquote>
+  ),
+  hr: () => <hr className="border-[#27272B] my-4" />,
+};
+
 export function MissionControlPanel({
   workspaceSlug,
   projects,
@@ -53,6 +134,7 @@ export function MissionControlPanel({
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string>("");
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rawBufferRef = useRef<string>("");
 
   const saveNorthStar = useCallback(
     async (value: string) => {
@@ -87,6 +169,7 @@ export function MissionControlPanel({
     setProposed([]);
     setAlignedCount(0);
     setError(null);
+    rawBufferRef.current = "";
 
     const t = await getToken();
     if (!t) { setPhase("idle"); return; }
@@ -97,7 +180,10 @@ export function MissionControlPanel({
       northStar: northStar.trim(),
       token: t,
       onPhase: (label) => setPhaseLabel(label),
-      onChunk: (chunk) => setPlanContent((prev) => prev + chunk),
+      onChunk: (chunk) => {
+        rawBufferRef.current += chunk;
+        setPlanContent(extractPlanContent(rawBufferRef.current));
+      },
       onPlanDone: () => setPhaseLabel("Building signal panel..."),
       onMisalignedTicket: (t) => setMisaligned((prev) => [...prev, t]),
       onProposedTicket: (t) => setProposed((prev) => [...prev, t]),
@@ -116,8 +202,8 @@ export function MissionControlPanel({
     });
   }
 
-  // Post-stream aligned count fix
   const isStreaming = phase === "streaming";
+  const isPlanDone = isPlanStreamingDone(rawBufferRef.current);
 
   return (
     <div className="flex h-full bg-[#0C0C0E]">
@@ -196,22 +282,14 @@ export function MissionControlPanel({
             </div>
           )}
           {planContent && (
-            <div className="text-sm text-[#D4D4DE] leading-relaxed
-              [&_h1]:text-base [&_h1]:font-semibold [&_h1]:text-[#EDEDEF] [&_h1]:mt-4 [&_h1]:mb-2 [&_h1]:first:mt-0
-              [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:text-[#EDEDEF] [&_h2]:mt-3 [&_h2]:mb-1.5 [&_h2]:first:mt-0
-              [&_h3]:text-sm [&_h3]:font-medium [&_h3]:text-[#EDEDEF] [&_h3]:mt-2.5 [&_h3]:mb-1 [&_h3]:first:mt-0
-              [&_p]:mb-2 [&_p:last-child]:mb-0
-              [&_ul]:mb-2 [&_ul]:pl-4 [&_ul]:space-y-1 [&_ul]:list-disc [&_ul]:marker:text-[#7C6FFD]/50
-              [&_ol]:mb-2 [&_ol]:pl-4 [&_ol]:space-y-1 [&_ol]:list-decimal
-              [&_li]:text-[#C4C4CE]
-              [&_strong]:font-semibold [&_strong]:text-[#EDEDEF]
-              [&_em]:italic [&_em]:text-[#88889A]
-              [&_code]:bg-[#18181C] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_code]:font-mono [&_code]:text-[#A78BFA] [&_code]:border [&_code]:border-[#27272B]
-              [&_blockquote]:border-l-2 [&_blockquote]:border-[#7C6FFD]/30 [&_blockquote]:pl-3 [&_blockquote]:text-[#88889A] [&_blockquote]:italic
-              [&_hr]:border-[#27272B] [&_hr]:my-3
-            ">
-              <ReactMarkdown>{planContent}</ReactMarkdown>
-              {isStreaming && (
+            <div>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={markdownComponents}
+              >
+                {planContent}
+              </ReactMarkdown>
+              {isStreaming && !isPlanDone && (
                 <span className="inline-block w-1.5 h-3.5 bg-[#7C6FFD] ml-0.5 rounded-sm align-middle animate-pulse" />
               )}
             </div>
