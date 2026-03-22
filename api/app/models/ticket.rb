@@ -9,6 +9,7 @@ class Ticket < ApplicationRecord
   belongs_to :assignee, class_name: "User", optional: true
   belongs_to :created_by, class_name: "User"
   has_many :embeddings, as: :source, dependent: :destroy
+  has_many :comments, class_name: "TicketComment", dependent: :destroy
 
   validates :title, presence: true, length: { maximum: 255 }
   validates :status,       inclusion: { in: STATUSES }

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
 import ReactMarkdown from "react-markdown";
+import { TicketComments } from "@/components/ticket-comments";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -241,6 +242,15 @@ export function TicketDetail({ ticket: initialTicket, spec, workspaceSlug, proje
             ) : (
               <p className="text-sm text-[#4A4A5A] italic">No description.</p>
             )}
+          </div>
+
+          {/* Comments */}
+          <div className="mb-6">
+            <TicketComments
+              workspaceSlug={workspaceSlug}
+              projectId={projectId}
+              ticketId={ticket.id}
+            />
           </div>
 
           {/* Spec content (collapsed) */}

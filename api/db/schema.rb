@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_22_000002) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_22_000100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -109,6 +109,19 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_22_000002) do
     t.index ["workspace_id"], name: "index_specs_on_workspace_id"
   end
 
+  create_table "ticket_comments", force: :cascade do |t|
+    t.bigint "ticket_id", null: false
+    t.bigint "workspace_id", null: false
+    t.string "author_id", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_ticket_comments_on_author_id"
+    t.index ["ticket_id", "created_at"], name: "index_ticket_comments_on_ticket_id_and_created_at"
+    t.index ["ticket_id"], name: "index_ticket_comments_on_ticket_id"
+    t.index ["workspace_id"], name: "index_ticket_comments_on_workspace_id"
+  end
+
   create_table "tickets", force: :cascade do |t|
     t.bigint "workspace_id", null: false
     t.bigint "project_id", null: false
@@ -179,6 +192,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_22_000002) do
   add_foreign_key "specs", "projects"
   add_foreign_key "specs", "users", column: "created_by_id"
   add_foreign_key "specs", "workspaces"
+  add_foreign_key "ticket_comments", "tickets"
+  add_foreign_key "ticket_comments", "users", column: "author_id"
+  add_foreign_key "ticket_comments", "workspaces"
   add_foreign_key "tickets", "distillations"
   add_foreign_key "tickets", "projects"
   add_foreign_key "tickets", "specs"
