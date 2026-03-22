@@ -3,8 +3,15 @@
 import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
+import { LabelBadge } from "./label-badge";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+interface Label {
+  id: string;
+  name: string;
+  color: string;
+}
 
 interface Ticket {
   id: string;
@@ -15,6 +22,7 @@ interface Ticket {
   story_points: number | null;
   spec_id: string | null;
   project_id: string;
+  labels: Label[];
 }
 
 const COLUMNS = [
@@ -101,7 +109,7 @@ export function KanbanBoard({ initialTickets, workspaceSlug, projectId }: Props)
                     >
                       {ticket.title}
                     </Link>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <span className={`text-xs px-1.5 py-0.5 rounded border font-medium ${PRIORITY_STYLES[ticket.priority] ?? PRIORITY_STYLES.low}`}>
                         {ticket.priority}
                       </span>
@@ -110,6 +118,9 @@ export function KanbanBoard({ initialTickets, workspaceSlug, projectId }: Props)
                           {ticket.story_points}pt
                         </span>
                       )}
+                      {ticket.labels?.slice(0, 2).map((label) => (
+                        <LabelBadge key={label.id} label={label} size="xs" />
+                      ))}
                     </div>
 
                     {isExpanded && (

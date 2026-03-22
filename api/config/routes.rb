@@ -10,10 +10,13 @@ Rails.application.routes.draw do
       resources :workspaces, param: :slug do
         patch "onboarding", to: "workspace_onboarding#update", on: :member
 
+        resources :labels
+
         resources :projects do
           resources :cycles
           resources :tickets, only: [ :index, :show, :create, :update, :destroy ], controller: "project_tickets" do
             resources :comments, only: [ :index, :create, :destroy ], controller: "ticket_comments"
+            put "labels", to: "ticket_labels#update"
           end
           resources :specs do
             resources :tickets

@@ -4,6 +4,12 @@ import { apiClient } from "@/lib/api";
 import { KanbanBoard } from "@/components/kanban-board";
 import Link from "next/link";
 
+interface Label {
+  id: string;
+  name: string;
+  color: string;
+}
+
 interface Ticket {
   id: string;
   title: string;
@@ -13,6 +19,7 @@ interface Ticket {
   story_points: number | null;
   spec_id: string | null;
   project_id: string;
+  labels: Label[];
 }
 
 interface Project {

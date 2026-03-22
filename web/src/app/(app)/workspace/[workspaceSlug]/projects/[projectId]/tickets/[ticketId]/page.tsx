@@ -4,6 +4,12 @@ import { apiClient } from "@/lib/api";
 import { TicketDetail } from "./ticket-detail";
 import Link from "next/link";
 
+interface Label {
+  id: string;
+  name: string;
+  color: string;
+}
+
 interface Ticket {
   id: string;
   title: string;
@@ -15,6 +21,7 @@ interface Ticket {
   project_id: string;
   spec_id: string | null;
   cycle_id: string | null;
+  labels: Label[];
   created_at: string;
   updated_at: string;
 }
@@ -50,9 +57,10 @@ export default async function TicketPage({ params }: PageProps) {
   let spec: Spec | null = null;
   let project: Project | null = null;
   let cycles: Cycle[] = [];
+  let workspaceLabels: Label[] = [];
 
   try {
-    const [ticketRes, projectRes, cyclesRes] = await Promise.all([
+    const [ticketRes, projectRes, cyclesRes, labelsRes] = await Promise.all([
       apiClient<{ data: Ticket }>(
         `/api/v1/workspaces/${workspaceSlug}/projects/${projectId}/tickets/${ticketId}`,
         { token: token ?? undefined }
@@ -65,10 +73,15 @@ export default async function TicketPage({ params }: PageProps) {
         `/api/v1/workspaces/${workspaceSlug}/projects/${projectId}/cycles`,
         { token: token ?? undefined }
       ),
+      apiClient<{ data: Label[] }>(
+        `/api/v1/workspaces/${workspaceSlug}/labels`,
+        { token: token ?? undefined }
+      ),
     ]);
     ticket = ticketRes.data;
     project = projectRes.data;
     cycles = cyclesRes.data;
+    workspaceLabels = labelsRes.data;
 
     if (ticket.spec_id) {
       const specRes = await apiClient<{ data: Spec }>(
@@ -103,6 +116,7 @@ export default async function TicketPage({ params }: PageProps) {
         workspaceSlug={workspaceSlug}
         projectId={projectId}
         cycles={cycles}
+        workspaceLabels={workspaceLabels}
       />
     </div>
   );

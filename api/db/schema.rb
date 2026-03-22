@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_22_000201) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_22_000301) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -99,6 +99,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_22_000201) do
     t.index ["workspace_id"], name: "index_feedback_on_workspace_id"
   end
 
+  create_table "labels", force: :cascade do |t|
+    t.bigint "workspace_id", null: false
+    t.string "name", null: false
+    t.string "color", default: "#6B7280", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["workspace_id", "name"], name: "index_labels_on_workspace_id_and_name", unique: true
+    t.index ["workspace_id"], name: "index_labels_on_workspace_id"
+  end
+
   create_table "projects", force: :cascade do |t|
     t.bigint "workspace_id", null: false
     t.string "name", null: false
@@ -137,6 +147,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_22_000201) do
     t.index ["ticket_id", "created_at"], name: "index_ticket_comments_on_ticket_id_and_created_at"
     t.index ["ticket_id"], name: "index_ticket_comments_on_ticket_id"
     t.index ["workspace_id"], name: "index_ticket_comments_on_workspace_id"
+  end
+
+  create_table "ticket_labels", force: :cascade do |t|
+    t.bigint "ticket_id", null: false
+    t.bigint "label_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["label_id"], name: "index_ticket_labels_on_label_id"
+    t.index ["ticket_id", "label_id"], name: "index_ticket_labels_on_ticket_id_and_label_id", unique: true
+    t.index ["ticket_id"], name: "index_ticket_labels_on_ticket_id"
   end
 
   create_table "tickets", force: :cascade do |t|
@@ -209,6 +229,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_22_000201) do
   add_foreign_key "embeddings", "workspaces"
   add_foreign_key "feedback", "projects"
   add_foreign_key "feedback", "workspaces"
+  add_foreign_key "labels", "workspaces"
   add_foreign_key "projects", "workspaces"
   add_foreign_key "specs", "conversations"
   add_foreign_key "specs", "projects"
@@ -217,6 +238,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_22_000201) do
   add_foreign_key "ticket_comments", "tickets"
   add_foreign_key "ticket_comments", "users", column: "author_id"
   add_foreign_key "ticket_comments", "workspaces"
+  add_foreign_key "ticket_labels", "labels"
+  add_foreign_key "ticket_labels", "tickets"
   add_foreign_key "tickets", "cycles"
   add_foreign_key "tickets", "distillations"
   add_foreign_key "tickets", "projects"

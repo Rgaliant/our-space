@@ -64,6 +64,7 @@ export function WorkspaceSidebar({ workspaceSlug, projects }: Props) {
           <>
             <NavLink href={`/workspace/${workspaceSlug}/mission`} label="Mission Control" icon="◎" active={pathname.startsWith(`/workspace/${workspaceSlug}/mission`)} accent="violet" />
             <NavLink href={`/workspace/${workspaceSlug}/plan`} label="Planning" icon="✦" active={pathname.startsWith(`/workspace/${workspaceSlug}/plan`)} accent="violet" />
+            <NavLink href={`/workspace/${workspaceSlug}/labels`} label="Labels" icon="⬡" active={pathname.startsWith(`/workspace/${workspaceSlug}/labels`)} accent="violet" />
             {projects.length > 0 && (
               <>
                 <p className="text-xs font-semibold text-[#4A4A5A] uppercase tracking-wider px-3 pt-4 pb-1.5">Boards</p>
