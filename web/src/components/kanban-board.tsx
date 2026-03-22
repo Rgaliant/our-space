@@ -17,7 +17,7 @@ interface Ticket {
   project_id: string;
 }
 
-const COLUMNS: { status: string; label: string }[] = [
+const COLUMNS = [
   { status: "backlog", label: "Backlog" },
   { status: "todo", label: "To Do" },
   { status: "in_progress", label: "In Progress" },
@@ -25,11 +25,11 @@ const COLUMNS: { status: string; label: string }[] = [
   { status: "done", label: "Done" },
 ];
 
-const PRIORITY_COLORS: Record<string, string> = {
-  critical: "bg-red-100 text-red-700",
-  high: "bg-orange-100 text-orange-700",
-  medium: "bg-yellow-100 text-yellow-700",
-  low: "bg-gray-100 text-gray-600",
+const PRIORITY_STYLES: Record<string, string> = {
+  critical: "bg-red-500/15 text-red-400 border-red-500/20",
+  high: "bg-orange-500/15 text-orange-400 border-orange-500/20",
+  medium: "bg-yellow-500/15 text-yellow-400 border-yellow-500/20",
+  low: "bg-[#27272B] text-[#88889A] border-[#3A3A42]",
 };
 
 const STATUS_ORDER = ["backlog", "todo", "in_progress", "in_review", "done"];
@@ -50,28 +50,15 @@ export function KanbanBoard({ initialTickets, workspaceSlug, projectId }: Props)
     const currentIdx = STATUS_ORDER.indexOf(ticket.status);
     const nextIdx = direction === "forward" ? currentIdx + 1 : currentIdx - 1;
     if (nextIdx < 0 || nextIdx >= STATUS_ORDER.length) return;
-
     const newStatus = STATUS_ORDER[nextIdx];
     setMovingId(ticket.id);
-
     const token = await getToken();
     try {
       const res = await fetch(
         `${API_BASE}/api/v1/workspaces/${workspaceSlug}/projects/${projectId}/tickets/${ticket.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ ticket: { status: newStatus } }),
-        }
+        { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ ticket: { status: newStatus } }) }
       );
-      if (res.ok) {
-        setTickets((prev) =>
-          prev.map((t) => (t.id === ticket.id ? { ...t, status: newStatus } : t))
-        );
-      }
+      if (res.ok) setTickets((prev) => prev.map((t) => t.id === ticket.id ? { ...t, status: newStatus } : t));
     } finally {
       setMovingId(null);
     }
@@ -83,14 +70,14 @@ export function KanbanBoard({ initialTickets, workspaceSlug, projectId }: Props)
   }, {});
 
   return (
-    <div className="flex gap-4 p-6 overflow-x-auto min-h-full items-start">
+    <div className="flex gap-3 p-5 overflow-x-auto h-full items-start bg-[#0C0C0E]">
       {COLUMNS.map((col) => {
         const colTickets = ticketsByStatus[col.status] ?? [];
         return (
-          <div key={col.status} className="shrink-0 w-64">
-            <div className="flex items-center gap-2 mb-3">
-              <h3 className="text-sm font-semibold text-gray-700">{col.label}</h3>
-              <span className="text-xs bg-gray-200 text-gray-600 rounded-full px-1.5 py-0.5">
+          <div key={col.status} className="shrink-0 w-60">
+            <div className="flex items-center gap-2 mb-2.5 px-1">
+              <h3 className="text-xs font-semibold text-[#88889A] uppercase tracking-wider">{col.label}</h3>
+              <span className="text-xs bg-[#18181C] text-[#4A4A5A] border border-[#27272B] rounded-full px-1.5 py-0.5 leading-none">
                 {colTickets.length}
               </span>
             </div>
@@ -102,35 +89,33 @@ export function KanbanBoard({ initialTickets, workspaceSlug, projectId }: Props)
                 return (
                   <div
                     key={ticket.id}
-                    className="bg-white border rounded-lg p-3 shadow-sm cursor-pointer hover:border-blue-300 transition-colors"
+                    className={`bg-[#111114] border rounded-xl p-3 cursor-pointer transition-all ${
+                      isExpanded ? "border-[#7C6FFD]/40 shadow-lg shadow-[#7C6FFD]/5" : "border-[#27272B] hover:border-[#3A3A42]"
+                    }`}
                     onClick={() => setExpandedId(isExpanded ? null : ticket.id)}
                   >
                     <Link
                       href={`/workspace/${workspaceSlug}/projects/${projectId}/tickets/${ticket.id}`}
                       onClick={(e) => e.stopPropagation()}
-                      className="text-sm font-medium text-gray-900 leading-snug hover:text-indigo-600 transition-colors"
+                      className="text-sm font-medium text-[#EDEDEF] leading-snug hover:text-[#7C6FFD] transition-colors block mb-2"
                     >
                       {ticket.title}
                     </Link>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span
-                        className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-                          PRIORITY_COLORS[ticket.priority] ?? PRIORITY_COLORS.medium
-                        }`}
-                      >
+                    <div className="flex items-center gap-1.5">
+                      <span className={`text-xs px-1.5 py-0.5 rounded border font-medium ${PRIORITY_STYLES[ticket.priority] ?? PRIORITY_STYLES.low}`}>
                         {ticket.priority}
                       </span>
                       {ticket.story_points && (
-                        <span className="text-xs text-gray-400 border rounded px-1.5 py-0.5">
+                        <span className="text-xs text-[#4A4A5A] border border-[#27272B] rounded px-1.5 py-0.5">
                           {ticket.story_points}pt
                         </span>
                       )}
                     </div>
 
                     {isExpanded && (
-                      <div className="mt-3 pt-3 border-t">
+                      <div className="mt-3 pt-3 border-t border-[#27272B]">
                         {ticket.description && (
-                          <p className="text-xs text-gray-600 mb-3 whitespace-pre-wrap">
+                          <p className="text-xs text-[#88889A] mb-3 leading-relaxed line-clamp-3">
                             {ticket.description}
                           </p>
                         )}
@@ -139,7 +124,7 @@ export function KanbanBoard({ initialTickets, workspaceSlug, projectId }: Props)
                             <button
                               onClick={(e) => { e.stopPropagation(); moveTicket(ticket, "back"); }}
                               disabled={isMoving}
-                              className="flex-1 text-xs py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
+                              className="flex-1 text-xs py-1.5 border border-[#27272B] rounded-lg text-[#88889A] hover:bg-[#18181C] hover:text-[#EDEDEF] disabled:opacity-50 transition-all"
                             >
                               ← {COLUMNS[colIdx - 1].label}
                             </button>
@@ -148,7 +133,7 @@ export function KanbanBoard({ initialTickets, workspaceSlug, projectId }: Props)
                             <button
                               onClick={(e) => { e.stopPropagation(); moveTicket(ticket, "forward"); }}
                               disabled={isMoving}
-                              className="flex-1 text-xs py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                              className="flex-1 text-xs py-1.5 bg-[#7C6FFD] text-white rounded-lg hover:bg-[#6B5EEC] disabled:opacity-50 transition-all"
                             >
                               {COLUMNS[colIdx + 1].label} →
                             </button>
@@ -160,8 +145,8 @@ export function KanbanBoard({ initialTickets, workspaceSlug, projectId }: Props)
                 );
               })}
               {colTickets.length === 0 && (
-                <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center">
-                  <p className="text-xs text-gray-400">No tickets</p>
+                <div className="border border-dashed border-[#27272B] rounded-xl p-4 text-center">
+                  <p className="text-xs text-[#4A4A5A]">Empty</p>
                 </div>
               )}
             </div>

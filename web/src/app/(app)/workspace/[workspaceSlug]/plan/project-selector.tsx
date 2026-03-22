@@ -72,18 +72,18 @@ export function ProjectSelector({ workspaceSlug, projects, activeProjectId, conv
             if (e.key === "Escape") { setCreating(false); setNewName(""); }
           }}
           placeholder="Project name"
-          className="text-xs border rounded px-2 py-1.5 w-36 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="text-xs bg-[#111114] border border-[#27272B] rounded-lg px-2.5 py-1.5 w-36 text-[#EDEDEF] placeholder-[#4A4A5A] focus:outline-none focus:border-[#7C6FFD]/50 focus:ring-1 focus:ring-[#7C6FFD]/20 transition-all"
         />
         <button
           onClick={createProject}
           disabled={loading || !newName.trim()}
-          className="text-xs px-2 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+          className="text-xs px-2.5 py-1.5 bg-[#7C6FFD] text-white rounded-lg hover:bg-[#6B5EEC] disabled:opacity-50 transition-colors"
         >
           {loading ? "..." : "Create"}
         </button>
         <button
           onClick={() => { setCreating(false); setNewName(""); }}
-          className="text-xs px-2 py-1.5 border rounded hover:bg-gray-50"
+          className="text-xs px-2.5 py-1.5 border border-[#27272B] rounded-lg text-[#88889A] hover:bg-[#18181C] hover:text-[#EDEDEF] transition-all"
         >
           Cancel
         </button>
@@ -97,7 +97,7 @@ export function ProjectSelector({ workspaceSlug, projects, activeProjectId, conv
         <select
           value={activeProjectId ?? ""}
           onChange={(e) => selectProject(e.target.value)}
-          className="text-xs border rounded px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-700"
+          className="text-xs bg-[#111114] border border-[#27272B] rounded-lg px-2.5 py-1.5 text-[#88889A] focus:outline-none focus:border-[#7C6FFD]/50 focus:ring-1 focus:ring-[#7C6FFD]/20 transition-all"
         >
           <option value="">No project</option>
           {projects.map((p) => (
@@ -107,11 +107,11 @@ export function ProjectSelector({ workspaceSlug, projects, activeProjectId, conv
           ))}
         </select>
       ) : (
-        <span className="text-xs text-gray-400">No projects yet</span>
+        <span className="text-xs text-[#4A4A5A]">No projects yet</span>
       )}
       <button
         onClick={() => setCreating(true)}
-        className="text-xs text-blue-600 hover:text-blue-800 px-1"
+        className="text-xs text-[#7C6FFD] hover:text-[#6B5EEC] px-1 transition-colors"
         title="New project"
       >
         + project

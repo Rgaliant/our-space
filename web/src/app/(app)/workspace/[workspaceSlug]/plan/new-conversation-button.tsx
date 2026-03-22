@@ -70,7 +70,7 @@ export function NewConversationButton({
           <select
             value={selectedProjectId}
             onChange={(e) => setSelectedProjectId(e.target.value)}
-            className="text-sm border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="text-sm bg-[#111114] border border-[#27272B] rounded-xl px-3 py-2 text-[#88889A] focus:outline-none focus:border-[#7C6FFD]/50 focus:ring-1 focus:ring-[#7C6FFD]/20 transition-all"
           >
             <option value="">No project (chat only)</option>
             {projects.map((p) => (
@@ -83,7 +83,7 @@ export function NewConversationButton({
         <button
           onClick={createConversation}
           disabled={loading}
-          className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          className="px-5 py-2.5 bg-[#7C6FFD] text-white text-sm font-medium rounded-xl hover:bg-[#6B5EEC] disabled:opacity-50 transition-colors"
         >
           {loading ? "Starting..." : "Start Planning Session"}
         </button>
@@ -93,16 +93,10 @@ export function NewConversationButton({
 
   return (
     <div className="relative flex items-center gap-2">
-      {activeProjectId && projects.length > 0 && (
-        <span className="text-xs text-gray-500 border rounded px-2 py-1">
-          {projects.find((p) => p.id === activeProjectId)?.name ?? "project"}
-        </span>
-      )}
-
       {conversations.length > 0 && (
         <button
           onClick={() => { setShowPicker(!showPicker); setShowNew(false); }}
-          className="text-xs text-gray-500 hover:text-gray-800 border rounded px-2 py-1"
+          className="text-xs text-[#88889A] hover:text-[#EDEDEF] border border-[#27272B] rounded-lg px-2.5 py-1.5 hover:border-[#3A3A42] transition-all"
         >
           {conversations.length} session{conversations.length !== 1 ? "s" : ""} ▾
         </button>
@@ -111,18 +105,18 @@ export function NewConversationButton({
       <button
         onClick={() => { setShowNew(!showNew); setShowPicker(false); }}
         disabled={loading}
-        className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+        className="text-xs px-3 py-1.5 bg-[#7C6FFD] text-white rounded-lg hover:bg-[#6B5EEC] disabled:opacity-50 transition-colors"
       >
         + New
       </button>
 
       {showNew && (
-        <div className="absolute right-0 top-8 z-10 bg-white border rounded-lg shadow-lg w-64 p-3">
-          <p className="text-xs font-medium text-gray-700 mb-2">New planning session</p>
+        <div className="absolute right-0 top-9 z-10 bg-[#111114] border border-[#27272B] rounded-xl shadow-2xl shadow-black/40 w-64 p-3">
+          <p className="text-xs font-medium text-[#88889A] mb-2">New planning session</p>
           <select
             value={selectedProjectId}
             onChange={(e) => setSelectedProjectId(e.target.value)}
-            className="w-full text-xs border rounded px-2 py-1.5 mb-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full text-xs bg-[#18181C] border border-[#27272B] rounded-lg px-2.5 py-1.5 mb-2.5 text-[#88889A] focus:outline-none focus:border-[#7C6FFD]/50 transition-all"
           >
             <option value="">No project (chat only)</option>
             {projects.map((p) => (
@@ -134,7 +128,7 @@ export function NewConversationButton({
           <button
             onClick={createConversation}
             disabled={loading}
-            className="w-full text-xs py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+            className="w-full text-xs py-2 bg-[#7C6FFD] text-white rounded-lg hover:bg-[#6B5EEC] disabled:opacity-50 transition-colors font-medium"
           >
             {loading ? "Creating..." : "Start session"}
           </button>
@@ -142,7 +136,7 @@ export function NewConversationButton({
       )}
 
       {showPicker && (
-        <div className="absolute right-0 top-8 z-10 bg-white border rounded-lg shadow-lg w-56 py-1">
+        <div className="absolute right-0 top-9 z-10 bg-[#111114] border border-[#27272B] rounded-xl shadow-2xl shadow-black/40 w-56 py-1">
           {conversations.map((c) => (
             <button
               key={c.id}
@@ -150,7 +144,7 @@ export function NewConversationButton({
                 router.push(`/workspace/${workspaceSlug}/plan?cid=${c.id}`);
                 setShowPicker(false);
               }}
-              className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50 truncate"
+              className="w-full text-left px-3 py-2 text-xs text-[#88889A] hover:bg-[#18181C] hover:text-[#EDEDEF] truncate transition-colors"
             >
               {c.title}
             </button>

@@ -71,17 +71,17 @@ export default async function TicketPage({ params }: PageProps) {
   if (!ticket) redirect(`/workspace/${workspaceSlug}/projects/${projectId}/board`);
 
   return (
-    <div className="flex flex-col h-full" style={{ height: "calc(100vh - 49px)" }}>
+    <div className="flex flex-col h-full bg-[#0C0C0E]" style={{ height: "calc(100vh - 49px)" }}>
       {/* Breadcrumb */}
-      <div className="border-b px-6 py-3 flex items-center gap-2 text-xs text-gray-400 shrink-0">
+      <div className="border-b border-[#27272B] bg-[#0C0C0E] px-6 py-3 flex items-center gap-2 text-xs text-[#4A4A5A] shrink-0">
         <Link
           href={`/workspace/${workspaceSlug}/projects/${projectId}/board`}
-          className="hover:text-gray-700 transition-colors"
+          className="hover:text-[#88889A] transition-colors"
         >
           {project?.name ?? "Board"}
         </Link>
         <span>/</span>
-        <span className="text-gray-600 truncate max-w-xs">{ticket.title}</span>
+        <span className="text-[#88889A] truncate max-w-xs">{ticket.title}</span>
       </div>
 
       <TicketDetail

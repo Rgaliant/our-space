@@ -78,9 +78,9 @@ export default async function PlanPage({ params, searchParams }: PageProps) {
   }
 
   return (
-    <div className="h-full flex flex-col" style={{ height: "calc(100vh - 49px)" }}>
-      <div className="border-b px-6 py-3 flex items-center justify-between shrink-0">
-        <h1 className="text-sm font-semibold">
+    <div className="h-full flex flex-col bg-[#0C0C0E]" style={{ height: "calc(100vh - 49px)" }}>
+      <div className="border-b border-[#27272B] bg-[#0C0C0E] px-6 py-3 flex items-center justify-between shrink-0">
+        <h1 className="text-sm font-semibold text-[#EDEDEF]">
           {activeConversation ? activeConversation.title : "Planning Mode"}
         </h1>
         <div className="flex items-center gap-2">
@@ -111,10 +111,12 @@ export default async function PlanPage({ params, searchParams }: PageProps) {
           />
         </div>
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
-          <div className="text-3xl mb-3">✦</div>
-          <h2 className="text-xl font-semibold mb-2">Planning Mode</h2>
-          <p className="text-sm text-gray-500 max-w-sm mb-6">
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-[#0C0C0E]">
+          <div className="w-12 h-12 rounded-2xl bg-[#7C6FFD]/10 border border-[#7C6FFD]/20 flex items-center justify-center mb-4">
+            <span className="text-[#7C6FFD] text-xl leading-none">✦</span>
+          </div>
+          <h2 className="text-base font-semibold text-[#EDEDEF] mb-1.5">Planning Mode</h2>
+          <p className="text-sm text-[#88889A] max-w-xs leading-relaxed mb-6">
             Have a conversation with Claude to define your next feature. It will ask clarifying
             questions, then generate a spec and tickets automatically.
           </p>
