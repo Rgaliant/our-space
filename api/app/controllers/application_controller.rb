@@ -24,7 +24,26 @@ class ApplicationController < ActionController::API
   private
 
   def current_user
-    @current_user ||= User.find(clerk_session.user_id)
+    @current_user ||= User.find_by(id: clerk_session.user_id) || sync_user_from_clerk
+  end
+
+  def sync_user_from_clerk
+    response = Faraday.get("https://api.clerk.com/v1/users/#{clerk_session.user_id}") do |req|
+      req.headers["Authorization"] = "Bearer #{ENV.fetch("CLERK_SECRET_KEY", "")}"
+    end
+    raise ActiveRecord::RecordNotFound, "Clerk user not found" unless response.success?
+
+    data = JSON.parse(response.body)
+    User.create!(
+      id: data["id"],
+      email: data["email_addresses"]&.first&.dig("email_address") || "#{data["id"]}@placeholder.local",
+      display_name: [ data["first_name"], data["last_name"] ].compact.join(" ").presence
+    )
+  rescue ActiveRecord::RecordNotFound
+    raise
+  rescue StandardError => e
+    Rails.logger.warn("User sync failed for #{clerk_session.user_id}: #{e.message}")
+    raise ActiveRecord::RecordNotFound, "User #{clerk_session.user_id} not found"
   end
 
   def handle_bad_request(e)
