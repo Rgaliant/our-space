@@ -1,0 +1,66 @@
+steps:
+  # Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${SHORT_SHA}'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:latest'
+      - 'api/'
+    id: 'build'
+
+  # Push to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '--all-tags'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}'
+    id: 'push'
+    waitFor: ['build']
+
+  # Run database migrations as Cloud Run Job
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'jobs'
+      - 'execute'
+      - '${_SERVICE}-migrate'
+      - '--region=${_REGION}'
+      - '--wait'
+    id: 'migrate'
+    waitFor: ['push']
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE}'
+      - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${SHORT_SHA}'
+      - '--region=${_REGION}'
+      - '--platform=managed'
+      - '--min-instances=1'
+      - '--max-instances=10'
+      - '--memory=512Mi'
+      - '--cpu=1'
+      - '--concurrency=80'
+      - '--timeout=300'
+      - '--set-env-vars=RAILS_ENV=production,RAILS_LOG_TO_STDOUT=true'
+      - '--set-secrets=DATABASE_URL=our-space-database-url:latest,RAILS_MASTER_KEY=our-space-rails-master-key:latest,CLERK_SECRET_KEY=our-space-clerk-secret-key:latest,ANTHROPIC_API_KEY=our-space-anthropic-api-key:latest,VOYAGE_API_KEY=our-space-voyage-api-key:latest'
+      - '--service-account=${_SERVICE_ACCOUNT}'
+      - '--vpc-connector=${_VPC_CONNECTOR}'
+    id: 'deploy'
+    waitFor: ['migrate']
+
+substitutions:
+  _REGION: us-central1
+  _REPO: our-space
+  _SERVICE: our-space-api
+  _SERVICE_ACCOUNT: our-space-api@${PROJECT_ID}.iam.gserviceaccount.com
+  _VPC_CONNECTOR: our-space-vpc-connector
+
+options:
+  logging: CLOUD_LOGGING_ONLY
