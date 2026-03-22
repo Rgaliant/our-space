@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import Link from "next/link";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -104,9 +105,13 @@ export function KanbanBoard({ initialTickets, workspaceSlug, projectId }: Props)
                     className="bg-white border rounded-lg p-3 shadow-sm cursor-pointer hover:border-blue-300 transition-colors"
                     onClick={() => setExpandedId(isExpanded ? null : ticket.id)}
                   >
-                    <p className="text-sm font-medium text-gray-900 leading-snug">
+                    <Link
+                      href={`/workspace/${workspaceSlug}/projects/${projectId}/tickets/${ticket.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-sm font-medium text-gray-900 leading-snug hover:text-indigo-600 transition-colors"
+                    >
                       {ticket.title}
-                    </p>
+                    </Link>
                     <div className="flex items-center gap-2 mt-2">
                       <span
                         className={`text-xs px-1.5 py-0.5 rounded font-medium ${

@@ -3,11 +3,15 @@ module Api
     class ProjectTicketsController < ApplicationController
       before_action :set_workspace
       before_action :set_project
-      before_action :set_ticket, only: [ :update ]
+      before_action :set_ticket, only: [ :show, :update ]
 
       def index
         tickets = @project.tickets.order(:position, :created_at)
         render json: { data: TicketSerializer.render_as_hash(tickets) }
+      end
+
+      def show
+        render json: { data: TicketSerializer.render_as_hash(@ticket) }
       end
 
       def update

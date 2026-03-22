@@ -11,21 +11,22 @@ module Ai
       system_prompt = build_system_prompt
 
       full_response = ""
-      client.messages.stream(
+      stream = client.messages.stream(
         model: "claude-sonnet-4-6",
         max_tokens: 2048,
         system: system_prompt,
         messages: [ { role: "user", content: @message } ]
-      ) do |event|
-        if event.type == "content_block_delta" && event.delta.type == "text_delta"
-          chunk = event.delta.text
-          full_response += chunk
-          block.call(chunk) if block
-        end
+      )
+
+      stream.text.each do |chunk|
+        full_response += chunk
+        block.call(chunk) if block
       end
 
+      stream.until_done
+
       Result.new(success: true, payload: full_response)
-    rescue Anthropic::Error => e
+    rescue Anthropic::Errors::Error => e
       Result.new(success: false, error: "AI error: #{e.message}")
     end
 

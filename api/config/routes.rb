@@ -11,7 +11,7 @@ Rails.application.routes.draw do
         patch "onboarding", to: "workspace_onboarding#update", on: :member
 
         resources :projects do
-          resources :tickets, only: [ :index, :update ], controller: "project_tickets"
+          resources :tickets, only: [ :index, :show, :update ], controller: "project_tickets"
           resources :specs do
             resources :tickets
           end
