@@ -5,6 +5,7 @@ class Ticket < ApplicationRecord
   belongs_to :workspace
   belongs_to :project
   belongs_to :spec, optional: true
+  belongs_to :distillation, optional: true
   belongs_to :assignee, class_name: "User", optional: true
   belongs_to :created_by, class_name: "User"
   has_many :embeddings, as: :source, dependent: :destroy

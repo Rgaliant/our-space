@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_21_225159) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_22_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -35,6 +35,21 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_21_225159) do
     t.index ["project_id"], name: "index_conversations_on_project_id"
     t.index ["user_id"], name: "index_conversations_on_user_id"
     t.index ["workspace_id"], name: "index_conversations_on_workspace_id"
+  end
+
+  create_table "distillations", force: :cascade do |t|
+    t.bigint "workspace_id", null: false
+    t.string "created_by_id", null: false
+    t.text "north_star", null: false
+    t.text "plan_content"
+    t.jsonb "proposed_tickets", default: []
+    t.integer "misaligned_ticket_ids", default: [], array: true
+    t.string "status", default: "generating", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_distillations_on_created_by_id"
+    t.index ["workspace_id", "created_at"], name: "index_distillations_on_workspace_id_and_created_at"
+    t.index ["workspace_id"], name: "index_distillations_on_workspace_id"
   end
 
   create_table "embeddings", force: :cascade do |t|
@@ -109,8 +124,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_21_225159) do
     t.integer "position", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "distillation_id"
     t.index ["assignee_id"], name: "index_tickets_on_assignee_id"
     t.index ["created_by_id"], name: "index_tickets_on_created_by_id"
+    t.index ["distillation_id"], name: "index_tickets_on_distillation_id"
     t.index ["project_id"], name: "index_tickets_on_project_id"
     t.index ["spec_id"], name: "index_tickets_on_spec_id"
     t.index ["workspace_id"], name: "index_tickets_on_workspace_id"
@@ -152,6 +169,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_21_225159) do
   add_foreign_key "conversations", "projects"
   add_foreign_key "conversations", "users"
   add_foreign_key "conversations", "workspaces"
+  add_foreign_key "distillations", "users", column: "created_by_id"
+  add_foreign_key "distillations", "workspaces"
   add_foreign_key "embeddings", "workspaces"
   add_foreign_key "feedback", "projects"
   add_foreign_key "feedback", "workspaces"
@@ -160,6 +179,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_21_225159) do
   add_foreign_key "specs", "projects"
   add_foreign_key "specs", "users", column: "created_by_id"
   add_foreign_key "specs", "workspaces"
+  add_foreign_key "tickets", "distillations"
   add_foreign_key "tickets", "projects"
   add_foreign_key "tickets", "specs"
   add_foreign_key "tickets", "users", column: "assignee_id"

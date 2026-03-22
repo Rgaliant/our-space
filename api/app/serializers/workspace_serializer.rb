@@ -1,6 +1,6 @@
 class WorkspaceSerializer < Blueprinter::Base
   identifier :id
-  fields :name, :slug, :plan, :created_at, :updated_at
+  fields :name, :slug, :plan, :context, :created_at, :updated_at
 
   association :owner, blueprint: UserSerializer
 

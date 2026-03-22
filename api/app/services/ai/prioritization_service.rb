@@ -22,10 +22,13 @@ module Ai
 
       ticket_list = tickets.map { |t| { id: t.id, title: t.title, description: t.description } }
 
+      north_star = @project.workspace.context&.dig("north_star")
+      north_star_context = north_star.present? ? "Current company focus: #{north_star}. Tickets directly serving this goal should score higher." : ""
+
       response = client.messages.create(
         model: "claude-sonnet-4-6",
         max_tokens: 2048,
-        system: SYSTEM_PROMPT,
+        system: [ SYSTEM_PROMPT, north_star_context ].reject(&:blank?).join("\n\n"),
         messages: [
           {
             role: "user",

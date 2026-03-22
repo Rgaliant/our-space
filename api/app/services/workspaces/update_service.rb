@@ -6,7 +6,12 @@ module Workspaces
     end
 
     def call
-      if @workspace.update(@params)
+      merged = @params.to_h.symbolize_keys
+      if merged[:context].present?
+        merged[:context] = @workspace.context.merge(merged[:context].stringify_keys)
+      end
+
+      if @workspace.update(merged)
         Result.new(success: true, payload: @workspace)
       else
         Result.new(success: false, error: @workspace.errors.full_messages.to_sentence)

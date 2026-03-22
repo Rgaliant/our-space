@@ -28,8 +28,11 @@ Rails.application.routes.draw do
 
         resources :feedback, only: [ :index, :show, :create, :update, :destroy ]
 
+        resources :distillations, only: [ :index, :show ]
+
         namespace :ai do
           post "plan", to: "plan#create"
+          post "distill", to: "distillations#create"
         end
       end
     end

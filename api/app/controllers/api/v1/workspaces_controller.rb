@@ -40,7 +40,7 @@ module Api
       private
 
       def workspace_params
-        params.expect(workspace: [ :name, :plan ])
+        params.expect(workspace: [ :name, :plan, { context: [ :north_star ] } ])
       end
 
       def set_workspace
