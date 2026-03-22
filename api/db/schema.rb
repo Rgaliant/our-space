@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_22_000100) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_22_000201) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -35,6 +35,23 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_22_000100) do
     t.index ["project_id"], name: "index_conversations_on_project_id"
     t.index ["user_id"], name: "index_conversations_on_user_id"
     t.index ["workspace_id"], name: "index_conversations_on_workspace_id"
+  end
+
+  create_table "cycles", force: :cascade do |t|
+    t.bigint "workspace_id", null: false
+    t.bigint "project_id", null: false
+    t.string "created_by_id", null: false
+    t.string "name", null: false
+    t.date "start_date", null: false
+    t.date "end_date", null: false
+    t.string "status", default: "upcoming", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_cycles_on_created_by_id"
+    t.index ["project_id", "start_date"], name: "index_cycles_on_project_id_and_start_date"
+    t.index ["project_id", "status"], name: "index_cycles_on_project_id_and_status"
+    t.index ["project_id"], name: "index_cycles_on_project_id"
+    t.index ["workspace_id"], name: "index_cycles_on_workspace_id"
   end
 
   create_table "distillations", force: :cascade do |t|
@@ -138,8 +155,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_22_000100) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "distillation_id"
+    t.bigint "cycle_id"
     t.index ["assignee_id"], name: "index_tickets_on_assignee_id"
     t.index ["created_by_id"], name: "index_tickets_on_created_by_id"
+    t.index ["cycle_id"], name: "index_tickets_on_cycle_id"
     t.index ["distillation_id"], name: "index_tickets_on_distillation_id"
     t.index ["project_id"], name: "index_tickets_on_project_id"
     t.index ["spec_id"], name: "index_tickets_on_spec_id"
@@ -182,6 +201,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_22_000100) do
   add_foreign_key "conversations", "projects"
   add_foreign_key "conversations", "users"
   add_foreign_key "conversations", "workspaces"
+  add_foreign_key "cycles", "projects"
+  add_foreign_key "cycles", "users", column: "created_by_id"
+  add_foreign_key "cycles", "workspaces"
   add_foreign_key "distillations", "users", column: "created_by_id"
   add_foreign_key "distillations", "workspaces"
   add_foreign_key "embeddings", "workspaces"
@@ -195,6 +217,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_22_000100) do
   add_foreign_key "ticket_comments", "tickets"
   add_foreign_key "ticket_comments", "users", column: "author_id"
   add_foreign_key "ticket_comments", "workspaces"
+  add_foreign_key "tickets", "cycles"
   add_foreign_key "tickets", "distillations"
   add_foreign_key "tickets", "projects"
   add_foreign_key "tickets", "specs"

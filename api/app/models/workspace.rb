@@ -10,6 +10,7 @@ class Workspace < ApplicationRecord
   has_many :embeddings, dependent: :destroy
   has_many :distillations, dependent: :destroy
   has_many :ticket_comments, dependent: :destroy
+  has_many :cycles, dependent: :destroy
 
   validates :name, presence: true, length: { maximum: 100 }
   validates :slug, presence: true, uniqueness: true,

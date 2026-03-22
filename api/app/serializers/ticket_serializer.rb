@@ -13,6 +13,8 @@ class TicketSerializer < Blueprinter::Base
          :spec_id,
          :project_id,
          :workspace_id,
+         :cycle_id,
+         :distillation_id,
          :created_at,
          :updated_at
 end

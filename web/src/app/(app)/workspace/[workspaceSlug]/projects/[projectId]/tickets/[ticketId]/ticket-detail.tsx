@@ -4,8 +4,15 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
 import ReactMarkdown from "react-markdown";
 import { TicketComments } from "@/components/ticket-comments";
+import { CycleSelector } from "@/components/cycle-selector";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+interface Cycle {
+  id: string;
+  name: string;
+  status: string;
+}
 
 interface Ticket {
   id: string;
@@ -17,6 +24,7 @@ interface Ticket {
   story_points: number | null;
   project_id: string;
   spec_id: string | null;
+  cycle_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -38,6 +46,7 @@ interface Props {
   spec: Spec | null;
   workspaceSlug: string;
   projectId: string;
+  cycles: Cycle[];
 }
 
 const STATUSES = ["backlog", "todo", "in_progress", "in_review", "done"] as const;
@@ -83,7 +92,7 @@ const ASSISTANT_PROSE = `
   [&_h3]:font-medium [&_h3]:text-[#EDEDEF] [&_h3]:mt-1.5 [&_h3]:mb-0.5
 `;
 
-export function TicketDetail({ ticket: initialTicket, spec, workspaceSlug, projectId }: Props) {
+export function TicketDetail({ ticket: initialTicket, spec, workspaceSlug, projectId, cycles }: Props) {
   const { getToken } = useAuth();
   const [ticket, setTicket] = useState(initialTicket);
   const [updatingStatus, setUpdatingStatus] = useState(false);
@@ -194,6 +203,14 @@ export function TicketDetail({ ticket: initialTicket, spec, workspaceSlug, proje
 
           {/* Meta row */}
           <div className="flex flex-wrap items-center gap-2 mb-6">
+            <CycleSelector
+              workspaceSlug={workspaceSlug}
+              projectId={projectId}
+              ticketId={ticket.id}
+              currentCycleId={ticket.cycle_id}
+              cycles={cycles}
+              onUpdate={(cycleId) => setTicket((t) => ({ ...t, cycle_id: cycleId }))}
+            />
             <span className={`text-xs px-2 py-0.5 rounded border font-medium ${PRIORITY_STYLES[ticket.priority] ?? PRIORITY_STYLES.low}`}>
               {ticket.priority}
             </span>

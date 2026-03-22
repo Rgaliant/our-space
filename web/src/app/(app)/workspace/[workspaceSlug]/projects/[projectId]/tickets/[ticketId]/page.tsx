@@ -14,6 +14,7 @@ interface Ticket {
   story_points: number | null;
   project_id: string;
   spec_id: string | null;
+  cycle_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -22,6 +23,12 @@ interface Spec {
   id: string;
   title: string;
   content: string;
+}
+
+interface Cycle {
+  id: string;
+  name: string;
+  status: string;
 }
 
 interface Project {
@@ -42,9 +49,10 @@ export default async function TicketPage({ params }: PageProps) {
   let ticket: Ticket | null = null;
   let spec: Spec | null = null;
   let project: Project | null = null;
+  let cycles: Cycle[] = [];
 
   try {
-    const [ticketRes, projectRes] = await Promise.all([
+    const [ticketRes, projectRes, cyclesRes] = await Promise.all([
       apiClient<{ data: Ticket }>(
         `/api/v1/workspaces/${workspaceSlug}/projects/${projectId}/tickets/${ticketId}`,
         { token: token ?? undefined }
@@ -53,9 +61,14 @@ export default async function TicketPage({ params }: PageProps) {
         `/api/v1/workspaces/${workspaceSlug}/projects/${projectId}`,
         { token: token ?? undefined }
       ),
+      apiClient<{ data: Cycle[] }>(
+        `/api/v1/workspaces/${workspaceSlug}/projects/${projectId}/cycles`,
+        { token: token ?? undefined }
+      ),
     ]);
     ticket = ticketRes.data;
     project = projectRes.data;
+    cycles = cyclesRes.data;
 
     if (ticket.spec_id) {
       const specRes = await apiClient<{ data: Spec }>(
@@ -89,6 +102,7 @@ export default async function TicketPage({ params }: PageProps) {
         spec={spec}
         workspaceSlug={workspaceSlug}
         projectId={projectId}
+        cycles={cycles}
       />
     </div>
   );

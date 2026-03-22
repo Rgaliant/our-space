@@ -68,7 +68,10 @@ export function WorkspaceSidebar({ workspaceSlug, projects }: Props) {
               <>
                 <p className="text-xs font-semibold text-[#4A4A5A] uppercase tracking-wider px-3 pt-4 pb-1.5">Boards</p>
                 {projects.map((p) => (
-                  <NavLink key={p.id} href={`/workspace/${workspaceSlug}/projects/${p.id}/board`} label={p.name} icon="▦" active={pathname.includes(`/projects/${p.id}/board`)} accent="violet" />
+                  <div key={p.id}>
+                    <NavLink href={`/workspace/${workspaceSlug}/projects/${p.id}/board`} label={p.name} icon="▦" active={pathname.includes(`/projects/${p.id}/board`)} accent="violet" />
+                    <NavLink href={`/workspace/${workspaceSlug}/projects/${p.id}/cycles`} label="Cycles" icon="↻" active={pathname.includes(`/projects/${p.id}/cycles`)} accent="violet" />
+                  </div>
                 ))}
               </>
             )}
