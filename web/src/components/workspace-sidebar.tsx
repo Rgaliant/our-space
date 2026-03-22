@@ -62,6 +62,7 @@ export function WorkspaceSidebar({ workspaceSlug, projects }: Props) {
       <div className="flex flex-col gap-0.5 px-2 flex-1">
         {mode === "product" ? (
           <>
+            <NavLink href={`/workspace/${workspaceSlug}/mission`} label="Mission Control" icon="◎" active={pathname.startsWith(`/workspace/${workspaceSlug}/mission`)} accent="violet" />
             <NavLink href={`/workspace/${workspaceSlug}/plan`} label="Planning" icon="✦" active={pathname.startsWith(`/workspace/${workspaceSlug}/plan`)} accent="violet" />
             {projects.length > 0 && (
               <>
