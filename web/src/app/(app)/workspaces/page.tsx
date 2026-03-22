@@ -61,8 +61,8 @@ export default function WorkspacesPage() {
       const data = await res.json();
       router.push(`/workspace/${data.data.slug}/plan`);
     } else {
-      const err = await res.json();
-      setError(err?.error?.message || "Failed to create workspace");
+      const err = await res.json().catch(() => null);
+      setError(err?.error?.message || `Failed to create workspace (${res.status})`);
       setCreating(false);
     }
   }

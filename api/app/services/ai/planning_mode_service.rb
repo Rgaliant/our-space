@@ -31,37 +31,35 @@ module Ai
     end
 
     def call(&block)
-      # Save user message
       @conversation.messages.create!(role: "user", content: @message)
 
-      # Build message history for Claude
       messages = build_messages
-
-      # Stream from Claude
       full_response = ""
-      client.messages.stream(
+
+      stream = client.messages.stream(
         model: "claude-sonnet-4-6",
         max_tokens: 4096,
         system: SYSTEM_PROMPT,
         messages: messages
-      ) do |event|
-        if event.type == "content_block_delta" && event.delta.type == "text_delta"
-          chunk = event.delta.text
-          full_response += chunk
-          block.call(chunk) if block
-        end
+      )
+
+      stream.text.each do |chunk|
+        full_response += chunk
+        block.call(chunk) if block
       end
 
-      # Save assistant message
+      stream.until_done
+
       @conversation.messages.create!(role: "assistant", content: full_response)
 
-      # Parse and create spec if XML tag present
-      if full_response.include?("<generate_spec>")
-        Ai::SpecGeneratorService.new(full_response, project: @project, user: @user).call
+      spec = nil
+      if full_response.include?("<generate_spec>") && @project
+        spec_result = ::Ai::SpecGeneratorService.new(full_response, project: @project, user: @user).call
+        spec = spec_result.payload if spec_result.success?
       end
 
-      Result.new(success: true, payload: full_response)
-    rescue Anthropic::Error => e
+      Result.new(success: true, payload: { response: full_response, spec: spec })
+    rescue Anthropic::Errors::Error => e
       Result.new(success: false, error: "AI error: #{e.message}")
     end
 

@@ -12,10 +12,10 @@ module Api
           response.headers["Cache-Control"] = "no-cache"
           response.headers["X-Accel-Buffering"] = "no"
 
-          message = params.expect(plan: :message)
+          message = params.dig(:plan, :message).to_s
           project = @workspace.projects.find(params[:project_id]) if params[:project_id].present?
 
-          result = Ai::PlanningModeService.new(
+          result = ::Ai::PlanningModeService.new(
             message,
             conversation: @conversation,
             workspace: @workspace,
@@ -26,6 +26,17 @@ module Api
           end
 
           if result.success?
+            spec = result.payload[:spec]
+            if spec
+              event = {
+                type: "spec_created",
+                spec_id: spec.id,
+                spec_title: spec.title,
+                project_id: spec.project_id,
+                ticket_count: spec.tickets.count
+              }
+              response.stream.write("data: #{event.to_json}\n\n")
+            end
             response.stream.write("data: [DONE]\n\n")
           else
             response.stream.write("data: #{({ error: result.error }).to_json}\n\n")
@@ -43,7 +54,7 @@ module Api
         end
 
         def set_conversation
-          @conversation = @workspace.conversations.find(params[:conversation_id])
+          @conversation = @workspace.conversations.find(params.dig(:plan, :conversation_id))
         end
       end
     end

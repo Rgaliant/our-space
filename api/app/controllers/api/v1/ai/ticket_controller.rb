@@ -15,7 +15,7 @@ module Api
 
           message = params.expect(ticket_assistant: :message)
 
-          result = Ai::TicketAssistantService.new(
+          result = ::Ai::TicketAssistantService.new(
             message,
             ticket: @ticket,
             workspace: @workspace,

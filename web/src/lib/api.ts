@@ -20,6 +20,14 @@ export async function apiClient<T>(
   return res.json();
 }
 
+export interface SpecCreatedEvent {
+  type: "spec_created";
+  spec_id: string;
+  spec_title: string;
+  project_id: string;
+  ticket_count: number;
+}
+
 export async function streamPlanMessage({
   workspaceSlug,
   conversationId,
@@ -29,6 +37,7 @@ export async function streamPlanMessage({
   onChunk,
   onDone,
   onError,
+  onSpecCreated,
 }: {
   workspaceSlug: string;
   conversationId: string;
@@ -38,6 +47,7 @@ export async function streamPlanMessage({
   onChunk: (chunk: string) => void;
   onDone: () => void;
   onError: (error: string) => void;
+  onSpecCreated?: (event: SpecCreatedEvent) => void;
 }) {
   const res = await fetch(
     `${API_BASE}/api/v1/workspaces/${workspaceSlug}/ai/plan`,
@@ -49,7 +59,7 @@ export async function streamPlanMessage({
       },
       body: JSON.stringify({
         plan: { message, conversation_id: conversationId },
-        ...(projectId && { project_id: projectId }),
+        project_id: projectId,
       }),
     }
   );
@@ -81,6 +91,7 @@ export async function streamPlanMessage({
       try {
         const chunk = JSON.parse(data);
         if (typeof chunk === "string") onChunk(chunk);
+        else if (chunk?.type === "spec_created") onSpecCreated?.(chunk as SpecCreatedEvent);
         else if (chunk?.error) onError(chunk.error);
       } catch {
         // ignore parse errors

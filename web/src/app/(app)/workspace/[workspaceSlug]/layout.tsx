@@ -1,4 +1,11 @@
 import Link from "next/link";
+import { auth } from "@clerk/nextjs/server";
+import { apiClient } from "@/lib/api";
+
+interface Project {
+  id: string;
+  name: string;
+}
 
 interface Props {
   children: React.ReactNode;
@@ -7,6 +14,19 @@ interface Props {
 
 export default async function WorkspaceLayout({ children, params }: Props) {
   const { workspaceSlug } = await params;
+  const { getToken } = await auth();
+  const token = await getToken();
+
+  let projects: Project[] = [];
+  try {
+    const res = await apiClient<{ data: Project[] }>(
+      `/api/v1/workspaces/${workspaceSlug}/projects`,
+      { token: token ?? undefined }
+    );
+    projects = res.data;
+  } catch {
+    // workspace not found or API down
+  }
 
   return (
     <div className="flex flex-1 overflow-hidden">
@@ -27,6 +47,24 @@ export default async function WorkspaceLayout({ children, params }: Props) {
           <NavLink href={`/workspace/${workspaceSlug}/plan`} label="Planning Mode" icon="✦" />
           <NavLink href={`/workspace/${workspaceSlug}/engineer`} label="Engineer Brief" icon="⚡" />
         </div>
+
+        {projects.length > 0 && (
+          <div className="mt-4 px-4">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
+              Boards
+            </p>
+            <div className="flex flex-col gap-0.5">
+              {projects.map((project) => (
+                <NavLink
+                  key={project.id}
+                  href={`/workspace/${workspaceSlug}/projects/${project.id}/board`}
+                  label={project.name}
+                  icon="▦"
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </nav>
 
       <div className="flex-1 overflow-y-auto">{children}</div>

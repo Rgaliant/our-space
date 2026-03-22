@@ -8,27 +8,32 @@ class ApplicationController < ActionController::API
   rescue_from ActiveRecord::RecordInvalid,         with: :handle_unprocessable
   rescue_from Clerk::AuthenticationError,          with: :handle_unauthorized
 
-  if Rails.env.test?
-    def require_clerk_session!
-      user_id = request.headers["X-Clerk-User-Id"]
-      render json: { error: { message: "Authentication required", code: "UNAUTHORIZED" } },
-             status: :unauthorized and return unless user_id.present?
-      @_test_user_id = user_id
-    end
-
-    def clerk_session
-      OpenStruct.new(user_id: @_test_user_id)
-    end
-  end
-
   private
 
+  # In test env we bypass JWT verification via X-Clerk-User-Id header.
+  # In all other envs, Clerk::Rack::Middleware (auto-added by Railtie) resolves
+  # the JWT and populates request.env['clerk'] (accessible via `clerk`).
+  def require_clerk_session!
+    return if authenticated?
+
+    render json: { error: { message: "Authentication required", code: "UNAUTHORIZED" } },
+           status: :unauthorized
+  end
+
+  def authenticated?
+    Rails.env.test? ? request.headers["X-Clerk-User-Id"].present? : clerk.user?
+  end
+
+  def current_clerk_user_id
+    Rails.env.test? ? request.headers["X-Clerk-User-Id"] : clerk.user_id
+  end
+
   def current_user
-    @current_user ||= User.find_by(id: clerk_session.user_id) || sync_user_from_clerk
+    @current_user ||= User.find_by(id: current_clerk_user_id) || sync_user_from_clerk
   end
 
   def sync_user_from_clerk
-    response = Faraday.get("https://api.clerk.com/v1/users/#{clerk_session.user_id}") do |req|
+    response = Faraday.get("https://api.clerk.com/v1/users/#{current_clerk_user_id}") do |req|
       req.headers["Authorization"] = "Bearer #{ENV.fetch("CLERK_SECRET_KEY", "")}"
     end
     raise ActiveRecord::RecordNotFound, "Clerk user not found" unless response.success?
@@ -42,8 +47,8 @@ class ApplicationController < ActionController::API
   rescue ActiveRecord::RecordNotFound
     raise
   rescue StandardError => e
-    Rails.logger.warn("User sync failed for #{clerk_session.user_id}: #{e.message}")
-    raise ActiveRecord::RecordNotFound, "User #{clerk_session.user_id} not found"
+    Rails.logger.warn("User sync failed for #{current_clerk_user_id}: #{e.message}")
+    raise ActiveRecord::RecordNotFound, "User #{current_clerk_user_id} not found"
   end
 
   def handle_bad_request(e)

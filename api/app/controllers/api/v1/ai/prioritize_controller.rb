@@ -6,7 +6,7 @@ module Api
         before_action :set_project
 
         def create
-          result = Ai::PrioritizationService.new(@project, user: current_user).call
+          result = ::Ai::PrioritizationService.new(@project, user: current_user).call
           if result.success?
             render json: { data: { scores: result.payload } }
           else

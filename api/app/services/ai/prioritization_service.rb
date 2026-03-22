@@ -34,13 +34,14 @@ module Ai
         ]
       )
 
-      scores = JSON.parse(response.content.first.text)["scores"]
+      raw = response.content.first.text.gsub(/\A```(?:json)?\s*|\s*```\z/, "").strip
+      scores = JSON.parse(raw)["scores"]
       update_scores(scores, tickets)
 
       Result.new(success: true, payload: scores)
     rescue JSON::ParserError => e
       Result.new(success: false, error: "Failed to parse AI response: #{e.message}")
-    rescue Anthropic::Error => e
+    rescue Anthropic::Errors::Error => e
       Result.new(success: false, error: "AI error: #{e.message}")
     end
 

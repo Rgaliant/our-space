@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { PlanningChat } from "@/components/planning-chat";
 import { NewConversationButton } from "./new-conversation-button";
+import { ProjectSelector } from "./project-selector";
 import { apiClient } from "@/lib/api";
 
 interface Conversation {
@@ -11,14 +12,19 @@ interface Conversation {
   created_at: string;
 }
 
+interface Project {
+  id: string;
+  name: string;
+}
+
 interface PageProps {
   params: Promise<{ workspaceSlug: string }>;
-  searchParams: Promise<{ cid?: string }>;
+  searchParams: Promise<{ cid?: string; pid?: string }>;
 }
 
 export default async function PlanPage({ params, searchParams }: PageProps) {
   const { workspaceSlug } = await params;
-  const { cid } = await searchParams;
+  const { cid, pid } = await searchParams;
 
   const { userId, getToken } = await auth();
   if (!userId) redirect("/sign-in");
@@ -32,13 +38,26 @@ export default async function PlanPage({ params, searchParams }: PageProps) {
     );
     conversations = res.data;
   } catch {
-    // no conversations yet — API not running or no data
+    // no conversations yet
+  }
+
+  let projects: Project[] = [];
+  try {
+    const res = await apiClient<{ data: Project[] }>(
+      `/api/v1/workspaces/${workspaceSlug}/projects`,
+      { token: token ?? undefined }
+    );
+    projects = res.data;
+  } catch {
+    // no projects yet
   }
 
   const activeConversation =
     conversations.find((c) => c.id === cid) ?? conversations[0] ?? null;
 
-  // Load messages for active conversation
+  // Use project from URL param, or fall back to the conversation's project
+  const activeProjectId = pid ?? activeConversation?.project_id ?? undefined;
+
   let initialMessages: Array<{ id: string; role: "user" | "assistant"; content: string }> = [];
   if (activeConversation) {
     try {
@@ -60,20 +79,34 @@ export default async function PlanPage({ params, searchParams }: PageProps) {
 
   return (
     <div className="h-full flex flex-col" style={{ height: "calc(100vh - 49px)" }}>
-      {/* Top bar */}
       <div className="border-b px-6 py-3 flex items-center justify-between shrink-0">
         <h1 className="text-sm font-semibold">
           {activeConversation ? activeConversation.title : "Planning Mode"}
         </h1>
-        <NewConversationButton workspaceSlug={workspaceSlug} conversations={conversations} />
+        <div className="flex items-center gap-2">
+          {activeConversation && (
+            <ProjectSelector
+              workspaceSlug={workspaceSlug}
+              projects={projects}
+              activeProjectId={activeProjectId}
+              conversationId={activeConversation.id}
+            />
+          )}
+          <NewConversationButton
+            workspaceSlug={workspaceSlug}
+            conversations={conversations}
+            projects={projects}
+            activeProjectId={activeProjectId}
+          />
+        </div>
       </div>
 
-      {/* Chat or empty state */}
       {activeConversation ? (
         <div className="flex-1 min-h-0">
           <PlanningChat
             workspaceSlug={workspaceSlug}
             conversationId={String(activeConversation.id)}
+            projectId={activeProjectId}
             initialMessages={initialMessages}
           />
         </div>
@@ -85,7 +118,12 @@ export default async function PlanPage({ params, searchParams }: PageProps) {
             Have a conversation with Claude to define your next feature. It will ask clarifying
             questions, then generate a spec and tickets automatically.
           </p>
-          <NewConversationButton workspaceSlug={workspaceSlug} conversations={[]} primary />
+          <NewConversationButton
+            workspaceSlug={workspaceSlug}
+            conversations={[]}
+            projects={projects}
+            primary
+          />
         </div>
       )}
     </div>
