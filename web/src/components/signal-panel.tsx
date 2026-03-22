@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { apiClient } from "@/lib/api";
 import { MisalignedTicketEvent, ProposedTicketEvent } from "@/lib/api";
 
@@ -11,7 +12,6 @@ interface SignalPanelProps {
   misaligned: MisalignedTicketEvent[];
   proposed: ProposedTicketEvent[];
   isStreaming: boolean;
-  token: string;
 }
 
 export function SignalPanel({
@@ -21,49 +21,48 @@ export function SignalPanel({
   misaligned,
   proposed,
   isStreaming,
-  token,
 }: SignalPanelProps) {
+  const { getToken } = useAuth();
   const [addedIds, setAddedIds] = useState<Set<number>>(new Set());
   const [addingIdx, setAddingIdx] = useState<number | null>(null);
+  const [errors, setErrors] = useState<Record<number, string>>({});
 
   async function addTicket(ticket: ProposedTicketEvent, idx: number) {
     if (addedIds.has(idx) || addingIdx === idx) return;
 
     const projectId = ticket.project_id ?? projects[0]?.id;
-    if (!projectId) return;
+    if (!projectId) {
+      setErrors((prev) => ({ ...prev, [idx]: "No project available" }));
+      return;
+    }
 
-    // Find the project to get a spec, or create ticket without spec
     setAddingIdx(idx);
-    try {
-      // Get specs for the project to attach to one, or use project-level ticket endpoint
-      const specsRes = await apiClient<{ data: { id: string }[] }>(
-        `/api/v1/workspaces/${workspaceSlug}/projects/${projectId}/specs`,
-        { token }
-      );
-      const specId = specsRes.data[0]?.id;
+    setErrors((prev) => { const next = { ...prev }; delete next[idx]; return next; });
 
-      if (specId) {
-        await apiClient(
-          `/api/v1/workspaces/${workspaceSlug}/projects/${projectId}/specs/${specId}/tickets`,
-          {
-            method: "POST",
-            token,
-            body: JSON.stringify({
-              ticket: {
-                title: ticket.title,
-                description: ticket.description ?? null,
-                priority: ticket.priority,
-                story_points: ticket.story_points ?? null,
-                status: "backlog",
-              },
-            }),
-          }
-        );
-      }
+    try {
+      const token = await getToken();
+      if (!token) throw new Error("Not authenticated");
+
+      await apiClient(
+        `/api/v1/workspaces/${workspaceSlug}/projects/${projectId}/tickets`,
+        {
+          method: "POST",
+          token,
+          body: JSON.stringify({
+            ticket: {
+              title: ticket.title,
+              description: ticket.description ?? null,
+              priority: ticket.priority,
+              story_points: ticket.story_points ?? null,
+              status: "backlog",
+            },
+          }),
+        }
+      );
 
       setAddedIds((prev) => new Set([...prev, idx]));
-    } catch {
-      // silently fail — user can retry
+    } catch (e) {
+      setErrors((prev) => ({ ...prev, [idx]: e instanceof Error ? e.message : "Failed to add" }));
     } finally {
       setAddingIdx(null);
     }
@@ -133,13 +132,18 @@ export function SignalPanel({
                     {added ? (
                       <p className="text-xs font-medium text-emerald-400">Added ✓</p>
                     ) : (
-                      <button
-                        onClick={() => addTicket(t, idx)}
-                        disabled={adding || !projects.length}
-                        className="text-xs font-medium text-[#7C6FFD] hover:text-[#9D8FFD] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                      >
-                        {adding ? "Adding..." : "+ Add to Backlog"}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => addTicket(t, idx)}
+                          disabled={adding || !projects.length}
+                          className="text-xs font-medium text-[#7C6FFD] hover:text-[#9D8FFD] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {adding ? "Adding..." : "+ Add to Backlog"}
+                        </button>
+                        {errors[idx] && (
+                          <span className="text-xs text-red-400">{errors[idx]}</span>
+                        )}
+                      </div>
                     )}
                   </div>
                 );

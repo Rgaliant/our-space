@@ -132,7 +132,6 @@ export function MissionControlPanel({
   const [proposed, setProposed] = useState<ProposedTicketEvent[]>([]);
   const [alignedCount, setAlignedCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [token, setToken] = useState<string>("");
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rawBufferRef = useRef<string>("");
 
@@ -173,7 +172,6 @@ export function MissionControlPanel({
 
     const t = await getToken();
     if (!t) { setPhase("idle"); return; }
-    setToken(t);
 
     await streamDistillation({
       workspaceSlug,
@@ -313,7 +311,6 @@ export function MissionControlPanel({
             misaligned={misaligned}
             proposed={proposed}
             isStreaming={isStreaming}
-            token={token}
           />
         </div>
       </div>

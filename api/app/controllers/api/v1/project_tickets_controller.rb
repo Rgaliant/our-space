@@ -3,7 +3,7 @@ module Api
     class ProjectTicketsController < ApplicationController
       before_action :set_workspace
       before_action :set_project
-      before_action :set_ticket, only: [ :show, :update ]
+      before_action :set_ticket, only: [ :show, :update, :destroy ]
 
       def index
         tickets = @project.tickets.order(:position, :created_at)
@@ -12,6 +12,24 @@ module Api
 
       def show
         render json: { data: TicketSerializer.render_as_hash(@ticket) }
+      end
+
+      def create
+        ticket = @project.tickets.build(
+          ticket_params.merge(
+            workspace: @workspace,
+            created_by: current_user,
+            status: ticket_params[:status] || "backlog"
+          )
+        )
+
+        if ticket.save
+          EmbedRecordJob.perform_later("Ticket", ticket.id)
+          render json: { data: TicketSerializer.render_as_hash(ticket) }, status: :created
+        else
+          render json: { error: { message: ticket.errors.full_messages.to_sentence, code: "TICKET_CREATE_FAILED" } },
+                 status: :unprocessable_entity
+        end
       end
 
       def update
