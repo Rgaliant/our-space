@@ -16,6 +16,7 @@ Rails.application.routes.draw do
           resources :cycles
           resources :tickets, only: [ :index, :show, :create, :update, :destroy ], controller: "project_tickets" do
             resources :comments, only: [ :index, :create, :destroy ], controller: "ticket_comments"
+            resources :pull_requests, only: [ :index, :create, :update, :destroy ]
             put "labels", to: "ticket_labels#update"
           end
           resources :specs do

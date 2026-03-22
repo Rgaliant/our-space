@@ -13,6 +13,7 @@ class Ticket < ApplicationRecord
   has_many :comments, class_name: "TicketComment", dependent: :destroy
   has_many :ticket_labels, dependent: :destroy
   has_many :labels, through: :ticket_labels
+  has_many :pull_requests, dependent: :destroy
 
   validates :title, presence: true, length: { maximum: 255 }
   validates :status,       inclusion: { in: STATUSES }

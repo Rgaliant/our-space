@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import { TicketComments } from "@/components/ticket-comments";
 import { CycleSelector } from "@/components/cycle-selector";
 import { LabelSelector } from "@/components/label-selector";
+import { PrLinkSection } from "@/components/pr-link-section";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -49,6 +50,15 @@ interface Message {
   content: string;
 }
 
+interface PullRequest {
+  id: string;
+  url: string;
+  title: string;
+  repo: string;
+  pr_number: number;
+  status: "open" | "merged" | "closed";
+}
+
 interface Props {
   ticket: Ticket;
   spec: Spec | null;
@@ -56,6 +66,7 @@ interface Props {
   projectId: string;
   cycles: Cycle[];
   workspaceLabels: Label[];
+  initialPullRequests: PullRequest[];
 }
 
 const STATUSES = ["backlog", "todo", "in_progress", "in_review", "done"] as const;
@@ -101,7 +112,7 @@ const ASSISTANT_PROSE = `
   [&_h3]:font-medium [&_h3]:text-[#EDEDEF] [&_h3]:mt-1.5 [&_h3]:mb-0.5
 `;
 
-export function TicketDetail({ ticket: initialTicket, spec, workspaceSlug, projectId, cycles, workspaceLabels }: Props) {
+export function TicketDetail({ ticket: initialTicket, spec, workspaceSlug, projectId, cycles, workspaceLabels, initialPullRequests }: Props) {
   const { getToken } = useAuth();
   const [ticket, setTicket] = useState(initialTicket);
   const [updatingStatus, setUpdatingStatus] = useState(false);
@@ -284,6 +295,16 @@ export function TicketDetail({ ticket: initialTicket, spec, workspaceSlug, proje
               workspaceSlug={workspaceSlug}
               projectId={projectId}
               ticketId={ticket.id}
+            />
+          </div>
+
+          {/* Pull Requests */}
+          <div className="mb-6">
+            <PrLinkSection
+              workspaceSlug={workspaceSlug}
+              projectId={projectId}
+              ticketId={ticket.id}
+              initialPrs={initialPullRequests}
             />
           </div>
 

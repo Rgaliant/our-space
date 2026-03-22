@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_22_000301) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_22_234309) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -117,6 +117,21 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_22_000301) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["workspace_id"], name: "index_projects_on_workspace_id"
+  end
+
+  create_table "pull_requests", force: :cascade do |t|
+    t.bigint "ticket_id", null: false
+    t.bigint "workspace_id", null: false
+    t.string "url", null: false
+    t.string "title"
+    t.string "repo"
+    t.integer "pr_number"
+    t.string "status", default: "open", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ticket_id", "pr_number", "repo"], name: "index_pull_requests_on_ticket_id_and_pr_number_and_repo", unique: true, where: "((pr_number IS NOT NULL) AND (repo IS NOT NULL))"
+    t.index ["ticket_id"], name: "index_pull_requests_on_ticket_id"
+    t.index ["workspace_id"], name: "index_pull_requests_on_workspace_id"
   end
 
   create_table "specs", force: :cascade do |t|
@@ -231,6 +246,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_22_000301) do
   add_foreign_key "feedback", "workspaces"
   add_foreign_key "labels", "workspaces"
   add_foreign_key "projects", "workspaces"
+  add_foreign_key "pull_requests", "tickets"
+  add_foreign_key "pull_requests", "workspaces"
   add_foreign_key "specs", "conversations"
   add_foreign_key "specs", "projects"
   add_foreign_key "specs", "users", column: "created_by_id"

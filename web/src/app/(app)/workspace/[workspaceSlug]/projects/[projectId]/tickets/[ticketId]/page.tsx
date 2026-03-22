@@ -38,6 +38,15 @@ interface Cycle {
   status: string;
 }
 
+interface PullRequest {
+  id: string;
+  url: string;
+  title: string;
+  repo: string;
+  pr_number: number;
+  status: "open" | "merged" | "closed";
+}
+
 interface Project {
   id: string;
   name: string;
@@ -58,9 +67,10 @@ export default async function TicketPage({ params }: PageProps) {
   let project: Project | null = null;
   let cycles: Cycle[] = [];
   let workspaceLabels: Label[] = [];
+  let pullRequests: PullRequest[] = [];
 
   try {
-    const [ticketRes, projectRes, cyclesRes, labelsRes] = await Promise.all([
+    const [ticketRes, projectRes, cyclesRes, labelsRes, prsRes] = await Promise.all([
       apiClient<{ data: Ticket }>(
         `/api/v1/workspaces/${workspaceSlug}/projects/${projectId}/tickets/${ticketId}`,
         { token: token ?? undefined }
@@ -77,11 +87,16 @@ export default async function TicketPage({ params }: PageProps) {
         `/api/v1/workspaces/${workspaceSlug}/labels`,
         { token: token ?? undefined }
       ),
+      apiClient<{ data: PullRequest[] }>(
+        `/api/v1/workspaces/${workspaceSlug}/projects/${projectId}/tickets/${ticketId}/pull_requests`,
+        { token: token ?? undefined }
+      ),
     ]);
     ticket = ticketRes.data;
     project = projectRes.data;
     cycles = cyclesRes.data;
     workspaceLabels = labelsRes.data;
+    pullRequests = prsRes.data;
 
     if (ticket.spec_id) {
       const specRes = await apiClient<{ data: Spec }>(
@@ -117,6 +132,7 @@ export default async function TicketPage({ params }: PageProps) {
         projectId={projectId}
         cycles={cycles}
         workspaceLabels={workspaceLabels}
+        initialPullRequests={pullRequests}
       />
     </div>
   );
