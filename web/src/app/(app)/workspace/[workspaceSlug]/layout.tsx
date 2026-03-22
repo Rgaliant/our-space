@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { apiClient } from "@/lib/api";
 import { WorkspaceSidebar } from "@/components/workspace-sidebar";
+import { CommandPalette } from "@/components/command-palette";
 
 interface Project {
   id: string;
@@ -32,6 +33,7 @@ export default async function WorkspaceLayout({ children, params }: Props) {
     <div className="flex flex-1 overflow-hidden">
       <WorkspaceSidebar workspaceSlug={workspaceSlug} projects={projects} />
       <div className="flex-1 overflow-y-auto">{children}</div>
+      <CommandPalette workspaceSlug={workspaceSlug} />
     </div>
   );
 }
