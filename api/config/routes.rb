@@ -7,6 +7,12 @@ Rails.application.routes.draw do
     namespace :v1 do
       get "me", to: "auth/me#show"
 
+      namespace :github do
+        get  "authorize", to: "oauth#authorize"
+        get  "callback",  to: "oauth#callback"
+        resource :connection, only: [ :show, :destroy ]
+      end
+
       resources :workspaces, param: :slug do
         patch "onboarding", to: "workspace_onboarding#update", on: :member
 
@@ -37,6 +43,16 @@ Rails.application.routes.draw do
 
         resources :distillations, only: [ :index, :show ]
         get "search", to: "search#show"
+
+        resources :github_repositories, only: [ :index, :create, :destroy ] do
+          member do
+            post :sync
+          end
+        end
+
+        namespace :github do
+          resources :repos, only: [ :index ]
+        end
 
         namespace :ai do
           post "plan", to: "plan#create"
