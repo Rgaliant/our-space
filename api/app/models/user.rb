@@ -8,6 +8,7 @@ class User < ApplicationRecord
   has_many :assigned_tickets, class_name: "Ticket", foreign_key: :assignee_id, inverse_of: :assignee, dependent: :nullify
   has_many :created_tickets, class_name: "Ticket", foreign_key: :created_by_id, inverse_of: :created_by, dependent: :destroy
   has_many :conversations
+  has_one :github_connection, dependent: :destroy
 
   validates :id, presence: true
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }

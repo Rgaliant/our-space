@@ -1,0 +1,31 @@
+our_space_repo:
+  workspace: acme
+  project: mobile_app
+  connected_by_id: "user_2abc123xyz"
+  github_repo_id: "987654"
+  full_name: "johnsmith/our-space"
+  name: "our-space"
+  description: "Our main project repo"
+  default_branch: "main"
+  private: false
+  last_synced_at: ~
+  sync_status: "pending"
+  metadata: {}
+  created_at: "2024-01-01 00:00:00"
+  updated_at: "2024-01-01 00:00:00"
+
+synced_repo:
+  workspace: acme
+  project: ~
+  connected_by_id: "user_2abc123xyz"
+  github_repo_id: "111222"
+  full_name: "johnsmith/api-service"
+  name: "api-service"
+  description: "Backend API service"
+  default_branch: "main"
+  private: true
+  last_synced_at: "2024-01-02 00:00:00"
+  sync_status: "synced"
+  metadata: {}
+  created_at: "2024-01-01 00:00:00"
+  updated_at: "2024-01-02 00:00:00"

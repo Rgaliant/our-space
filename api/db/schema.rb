@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_22_234309) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_26_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -97,6 +97,40 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_22_234309) do
     t.datetime "updated_at", null: false
     t.index ["project_id"], name: "index_feedback_on_project_id"
     t.index ["workspace_id"], name: "index_feedback_on_workspace_id"
+  end
+
+  create_table "github_connections", force: :cascade do |t|
+    t.string "user_id", null: false
+    t.string "access_token", null: false
+    t.string "github_login", null: false
+    t.string "github_user_id", null: false
+    t.string "scopes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["github_user_id"], name: "index_github_connections_on_github_user_id"
+    t.index ["user_id"], name: "index_github_connections_on_user_id", unique: true
+  end
+
+  create_table "github_repositories", force: :cascade do |t|
+    t.bigint "workspace_id", null: false
+    t.bigint "project_id"
+    t.string "connected_by_id", null: false
+    t.string "github_repo_id", null: false
+    t.string "full_name", null: false
+    t.string "name", null: false
+    t.text "description"
+    t.string "default_branch", default: "main", null: false
+    t.boolean "private", default: false, null: false
+    t.datetime "last_synced_at"
+    t.string "sync_status", default: "pending", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["connected_by_id"], name: "index_github_repositories_on_connected_by_id"
+    t.index ["project_id"], name: "index_github_repositories_on_project_id"
+    t.index ["sync_status"], name: "index_github_repositories_on_sync_status"
+    t.index ["workspace_id", "full_name"], name: "index_github_repositories_on_workspace_id_and_full_name", unique: true
+    t.index ["workspace_id"], name: "index_github_repositories_on_workspace_id"
   end
 
   create_table "labels", force: :cascade do |t|
@@ -244,6 +278,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_22_234309) do
   add_foreign_key "embeddings", "workspaces"
   add_foreign_key "feedback", "projects"
   add_foreign_key "feedback", "workspaces"
+  add_foreign_key "github_connections", "users"
+  add_foreign_key "github_repositories", "projects"
+  add_foreign_key "github_repositories", "users", column: "connected_by_id"
+  add_foreign_key "github_repositories", "workspaces"
   add_foreign_key "labels", "workspaces"
   add_foreign_key "projects", "workspaces"
   add_foreign_key "pull_requests", "tickets"

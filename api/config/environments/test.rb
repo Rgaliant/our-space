@@ -39,4 +39,7 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Allow unencrypted data in fixtures loaded before encryption was configured.
+  config.active_record.encryption.support_unencrypted_data = true
 end
